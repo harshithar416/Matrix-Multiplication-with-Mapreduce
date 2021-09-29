@@ -1,0 +1,62 @@
+def work(d):
+ n = 0
+ a = []
+ b = []
+ row = []
+ m = a
+ for i, r in enumerate(d):
+ if len(r) == 0:
+ m = b
+ continue
+ if n == 0:
+ n = len(r)
+ elif n != len(r):
+ assert False, "ERROR: rows with different columns"
+ for c in r:
+ try:
+ row.append(float(c))
+ except:
+ assert False, "ERROR: columns are not all floating numbers"
+ m.append(row)
+ row = []
+ if len(a) !=n or len(b) != n:
+ assert False, "ERROR: not square matrix"
+ return n, a, b
+def doMap(b, n, m):
+ output = []
+ for i in range(n):
+ for j in range(n):
+ for k in range(n):
+ if b == 0:
+ output.append(((i, k), (b, j, m[i][j])))
+ else:
+ output.append(((k, j), (b, i, m[i][j])))
+ return output
+def doReduce(m):
+ h = {}
+ for r in m:
+ s = str(r[0][0]) + ',' + str(r[0][1])
+ if s not in h:
+    h[s] = {}
+ if r[1][1] not in h[s]:
+ h[s][r[1][1]] = []
+ h[s][r[1][1]].append((r[1][0], r[1][2]))
+ for k in h:
+ sum = 0
+ for i in h[k]:
+ p = 1
+ for j in h[k][i]:
+ p *= j[1]
+ sum += p
+ h[k] = sum
+ return h
+from pyspark import SparkContext
+sc = SparkContext.getOrCreate()
+data =
+sc.textFile("dbfs:/FileStore/shared_uploads/harshitharamesh97@gmail.com/MM/.txt/*").m
+ap(lambda x: x.split()).filter(lambda x: x == [] or x[0] != '#')
+dim, a, b = work(data.collect())
+maps = doMap(0, dim, a)
+maps.extend(doMap(1, dim, b))
+reds = doReduce(maps)
+print(reds)
